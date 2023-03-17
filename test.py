@@ -1,4 +1,3 @@
 import os
+import torch
 
-img = os.path.abspath(os.getcwd())
-print(img)

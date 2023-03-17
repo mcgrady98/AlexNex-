@@ -27,10 +27,7 @@ def main():
 
 
     imgpath = os.path.abspath(os.getcwd())
-    print(imgpath)
     train_datas = datasets.ImageFolder(root=os.path.join(imgpath,"train"), transform=data_tansform["train"])
-    train_datas_len = len(train_datas)
-    print(os.path.join(imgpath,"train"))
     class_path = train_datas.class_to_idx
     class_path_1 = dict((v,k)for k,v in class_path.items())
     jos_class = json.dumps(class_path_1,indent=4)
@@ -39,7 +36,6 @@ def main():
 
     val_datas = datasets.ImageFolder(root=os.path.join(imgpath,"val"), transform=data_tansform["val"])
     val_datas_len = len(val_datas)
-
     train_loder = torch.utils.data.DataLoader(train_datas,batch_size=64,shuffle=True,num_workers=0)
     train_loder_len = len(train_loder)
     val_loder = torch.utils.data.DataLoader(val_datas,batch_size=64, shuffle=True, num_workers=0)
@@ -49,7 +45,7 @@ def main():
     net.to(device)  #把模型送入到GPU
     loss_function = nn.CrossEntropyLoss() # 损失函数
     optimizer = optim.Adam(net.parameters(),lr=0.0002) #优化器
-    epochs = 5
+    epochs = 10
     running_loss = 0.0
     tm1 = time.perf_counter()
     for epoch in range(epochs):
@@ -73,8 +69,8 @@ def main():
                 img1, label1 = img
                 outputs = net(img1.to(device))
                 predict_y = torch.max(outputs,dim=1)[1]
-                acc += (predict_y == label1).sum().item()
-            racc = acc/val_loder_len
+                acc += torch.eq(predict_y,label1.to(device)).sum().item()
+            racc = acc/val_datas_len
             if racc > best_acc:
                 best_acc = racc
                 torch.save(net.state_dict(),'canshu')    #保存模型参数
